@@ -1,0 +1,12 @@
+to do
+
+* get eurovision songs mp3 previews
+
+* create mel mfcc's
+
+* do data reduction with deeplearning auto encoder --> 40 dimensions and tsne for 3 dim
+
+* create shiny app 
+   * search a song
+   * perform mel and same dim reduction
+   * plot
