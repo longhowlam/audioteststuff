@@ -100,18 +100,11 @@ library(plotly)
 reduced = x_test_encoded %>%
   as_data_frame() %>%
   mutate(class = as.factor(mnist$test$y)) %>%
-  plot_ly(x = ~V1, y = ~V2, z = ~V3, color = ~class, size=2, sizes=c(1.99,1.99)) %>%
+  plot_ly(x = ~V1, y = ~V2, z = ~V3, color = ~class, size=2, text = ~class, sizes=c(2.2,2.2)) %>%
   add_markers() %>%
-  layout(title="3D variational autoencoder MNIST data")
+  layout(title="3D variational autoencoder MNIST data with Keras in R")
   
 reduced
-
-
-
-
-
-
-
 
 
 
