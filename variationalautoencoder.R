@@ -86,6 +86,7 @@ vae %>% fit(
 
 library(ggplot2)
 library(dplyr)
+
 x_test_encoded <- predict(encoder, x_test, batch_size = batch_size)
 
 x_test_encoded %>%
@@ -99,8 +100,9 @@ library(plotly)
 reduced = x_test_encoded %>%
   as_data_frame() %>%
   mutate(class = as.factor(mnist$test$y)) %>%
-  plot_ly(x = ~V1, y = ~V2, z = ~V3, color = ~class, size=2, sizes=c(.96,.96)) %>%
-  add_markers() 
+  plot_ly(x = ~V1, y = ~V2, z = ~V3, color = ~class, size=2, sizes=c(1.99,1.99)) %>%
+  add_markers() %>%
+  layout(title="3D variational autoencoder MNIST data")
   
 reduced
 
