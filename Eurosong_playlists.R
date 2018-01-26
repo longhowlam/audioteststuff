@@ -1,8 +1,9 @@
 library(httr)
 library(purrr)
 
-clientID = "bf061bc472ad45a2965b5ec1fff02010"
-secret = "1fd02c5e94324b41b5dbfea565cbcf57"
+clientID = readRDS("clientID.RDs")
+secret = readRDS("secret.RDs")
+
 
 #########################################################
 

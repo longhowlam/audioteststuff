@@ -12,7 +12,13 @@ ff = librosa$feature
 ##### test run for one test mp3
 audio_path = 'mp3/059G9tpE3kl6wz3kiddaN0.mp3'
 mp3 = librosa$load(audio_path)
-plot(mp3[[1]][1:30000], type="l")
+mp3[[2]]
+length(mp3[[1]])
+length(mp3[[1]])/mp3[[2]]  # 30 seconds sound
+
+## 2 seconds plot
+pp = 2*mp3[[2]]
+plot(mp3[[1]][1:pp], type="l")
 
 melgram = librosa$logamplitude(
   ff$melspectrogram(
@@ -24,8 +30,8 @@ melgram = librosa$logamplitude(
 dim(melgram)
 
 
-##### now do this for all mp3 in a folder
-mel = function(file, dir, .pb = NULL)
+##### mfcc 
+mfcc = function(file, dir, .pb = NULL)
 {
   if ((!is.null(.pb)) && inherits(.pb, "Progress") && (.pb$i < .pb$n)) .pb$tick()$print()
   
@@ -33,24 +39,29 @@ mel = function(file, dir, .pb = NULL)
   mp3 = librosa$load(pathfile)
   
   # calc  mel to file
-  melgram = librosa$logamplitude(
+  log_S = librosa$logamplitude(
     ff$melspectrogram(
       mp3[[1]], 
       sr = mp3[[2]],
       n_mels=96),
     ref_power=1.0
   )
-  melgram
+  mfcc = ff$mfcc(S=log_S, n_mfcc=13L)
+  mfcc1 = ff$delta(mfcc)
+  mfcc2 = ff$delta(mfcc, order=2L)
+  list(mfcc,mfcc1,mfcc2)
 }
 
 
 ## one mel calculation
 mp3s = paste0(list.files("mp3"))
-tmp = mel(mp3s[11], "mp3")
 
+tmp = mfcc(mp3s[1], "mp3")
+image(tmp[[3]])
 
 ## all mp3 files in a dir
-pb <- progress_estimated(length(mp3s))
+mp3s = paste0(list.files("mp3"))
+pb = progress_estimated(length(mp3s))
 EurosongsMels = purrr::map(mp3s, mel, dir = "mp3", .pb = pb)
 names(EurosongsMels) = mp3s
 length(EurosongsMels)
@@ -65,19 +76,12 @@ length(EurosongsMels)
 saveRDS(EurosongsMels, "EurosongsMels.RDs")
 
 #### transform as array
-tmp = unlist(EurosongsMels)
-dim(tmp) = c(422, 96, 1292,1)
-422*96*1292
+EurosongsMelsArray = array(NA , dim=c(422,96,1292,1))
+for(i in 1:422){
+  EurosongsMelsArray[i,,,] = EurosongsMels[[i]]
+}
 
-image(tmp[1, , ,])
-saveRDS(tmp, "EurosongsMelArrays.RDs")
-
-
-
-
-
-
-
-
+image(EurosongsMelsArray[1, , ,])
+saveRDS(EurosongsMelsArray, "EurosongsMelArrays.RDs")
 
 

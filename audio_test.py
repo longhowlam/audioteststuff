@@ -1,5 +1,6 @@
 from __future__ import print_function
 import numpy as np
+from dtw import dtw
 
 import matplotlib
 matplotlib.use('pdf')
@@ -51,3 +52,42 @@ outfile = '/home/longhowlam/RProjects/MusicTest/mel.npy'
 np.save(outfile,melgram)
 
 melgram
+
+
+
+
+
+
+
+
+
+
+import librosa
+import matplotlib.pyplot as plt
+from dtw import dtw
+
+#Loading audio files
+y1, sr1 = librosa.load('/home/longhowlam/RProjects/audioteststuff/mp3/1YySksBo8O9tdgBcdPIIWw.mp3') 
+y2, sr2 = librosa.load('/home/longhowlam/RProjects/audioteststuff/mp3/20vPs9ZVq3hcbKAs2o3QE1.mp3') 
+
+#Showing multiple plots using subplot
+plt.subplot(1, 2, 1) 
+mfcc1 = librosa.feature.mfcc(y1,sr1)   #Computing MFCC values
+librosa.display.specshow(mfcc1)
+
+plt.subplot(1, 2, 2)
+mfcc2 = librosa.feature.mfcc(y2, sr2)
+librosa.display.specshow(mfcc2)
+
+from numpy.linalg import norm
+dist, cost, acc_cost, path = dtw(mfcc1.T, mfcc2.T, dist=lambda x, y: norm(x - y, ord=1))
+dist
+
+
+plt.imshow(cost.T, origin='lower', cmap=plt.get_cmap('gray'), interpolation='nearest')
+plt.plot(path[0], path[1], 'w')   #creating plot for DTW
+
+plt.show()  #To display the plots graphically
+
+
+

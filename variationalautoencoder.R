@@ -7,7 +7,7 @@ batch_size <- 100L
 original_dim <- 784L
 latent_dim <- 3L
 intermediate_dim <- 256L
-epochs <- 50L
+epochs <- 8L
 epsilon_std <- 1.0
 
 # Model definition --------------------------------------------------------
@@ -73,14 +73,17 @@ x_test <- x_test %>% apply(1, as.numeric) %>% t()
 
 # Model training ----------------------------------------------------------
 
-vae %>% fit(
+out = vae %>% fit(
   x_train, x_train, 
   shuffle = TRUE, 
   epochs = epochs, 
   batch_size = batch_size, 
-  validation_data = list(x_test, x_test)
+  validation_data = list(x_test, x_test),
+  callbacks = callback_tensorboard("logs/run_b")
 )
 
+plot(out)
+tensorboard("logs/run_a")
 
 # Visualizations ----------------------------------------------------------
 
@@ -100,7 +103,13 @@ library(plotly)
 reduced = x_test_encoded %>%
   as_data_frame() %>%
   mutate(class = as.factor(mnist$test$y)) %>%
-  plot_ly(x = ~V1, y = ~V2, z = ~V3, color = ~class, size=2, text = ~class, sizes=c(2.2,2.2)) %>%
+  plot_ly(
+    x = ~V1, y = ~V2, z = ~V3, 
+    color = ~class, 
+    size=2,
+    text = ~paste('<b> ', class, '</b>'),
+    sizes=c(2.2,2.2)
+  ) %>%
   add_markers() %>%
   layout(title="3D variational autoencoder MNIST data with Keras in R")
   
