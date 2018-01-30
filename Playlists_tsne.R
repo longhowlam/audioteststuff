@@ -1,6 +1,6 @@
 ###############################################################################
 ##
-##  visualise different playlists with t-sne
+##  visualise songs of  different playlists with t-sne
 
 #### libraries needed ####
 library(httr)
@@ -13,14 +13,15 @@ library(plotly)
 #### python environment with librosa module installed
 use_python(python = "/usr/bin/python3")
 
-## spotify credientials
+#### spotify credientials
+#clientID = "123456789"
+#secret = "ABCDEFGHIJ"
 clientID = readRDS("clientID.RDs")
 secret = readRDS("secret.RDs")
 
-
 ###### Spotify api helper functions ###########################################
 
-## given a clientID and secret we can retrieve a token that is 
+## given a clientID and a secret we can retrieve a token that is 
 ## needed for further Spotify API calls
 
 GetSpotifyToken = function(clientID, secret){
@@ -42,8 +43,8 @@ GetSpotifyToken = function(clientID, secret){
   }
 }
 
-###################################################################################
-## given an userid and a playlistID we extract the tracks from this specific playlist
+#### given an userid and a playlistID we extract the tracks from this specific playlist
+#### and put some of the track info in a tibble
 
 ExtractTracksFromPlaylist = function(offset = 0, ownerID, playlistID, clientID, secret, mylabel = ""){ 
   ### get the playlist itself
@@ -73,9 +74,7 @@ ExtractTracksFromPlaylist = function(offset = 0, ownerID, playlistID, clientID, 
   )
 }
 
-
-######## get different kind of songs ####################################################
-
+######## get different of songs from playlists ############################################
 
 ########  Bach songs #########################
 ownerID = "spotify"
@@ -108,7 +107,6 @@ HEAVYMETAL_tracks = ExtractTracksFromPlaylist(
 
 ## ignore the songs without preview URL
 HEAVYMETAL_tracks = HEAVYMETAL_tracks %>% filter(preview_url != "")
-
 
 ######### Michael Jackson songs ############
 ownerID = "spotify"
@@ -144,7 +142,8 @@ VIOLIN_tracks = ExtractTracksFromPlaylist(
 VIOLIN_tracks = VIOLIN_tracks %>% filter(preview_url != "")
 
 
-######### stack all songs in one data frame and retrieve mp3's #####################
+##### stack all songs in one data frame
+##### and download the mp3's into a directory called mp3songs 
 
 AllSongs = bind_rows(MJ_tracks, HEAVYMETAL_tracks, BACH_tracks, VIOLIN_tracks)
 
@@ -164,7 +163,19 @@ for(i in seq_along(AllSongs$preview_url))
 librosa = import("librosa")
 ff = librosa$feature
 
-### helper function around librosa call
+## import one mp3 file
+mp3s = list.files("mp3songs/")
+onemp3 = librosa$load( paste0("mp3songs/", mp3s[1]))
+
+length(onemp3[[1]])
+length(onemp3[[1]])/onemp3[[2]]  # ~30 seconds sound
+
+## 5 seconds plot
+pp = 5*onemp3[[2]]
+plot(onemp3[[1]][1:pp], type="l")
+
+
+#### helper function around librosa call ####
 mfcc = function(file, dir, .pb = NULL)
 {
   if ((!is.null(.pb)) && inherits(.pb, "Progress") && (.pb$i < .pb$n)) .pb$tick()$print()
@@ -182,10 +193,16 @@ mfcc = function(file, dir, .pb = NULL)
   )
 }
 
+
 mp3s = list.files("mp3songs/")
 pb = progress_estimated(length(mp3s))
 
+### now using purrr::map we can calculate mfcc for each mp3 in the folder mp3songs
 AllSongsMFCC = purrr::map(mp3s, mfcc, dir = "mp3songs", .pb = pb)
+
+## create a plot of the mfcc matrix
+rotate <- function(x) t(apply(x, 2, rev))
+image(rotate(rotate(rotate(AllSongsMFCC[[1]]))))
 
 ## create a feature matrix. Simply flatten the matrix
 ## each song is now a row of 13*1292 values
@@ -196,8 +213,11 @@ for(i in 1:nsongs){
   AllSongsMFCCMatrix[i,] = as.numeric(AllSongsMFCC[[i]])
 }
 
+
+#### tsne and plotly ###################################################
+
 ### apply T-sne on the songs to reduce to 3 dimensions
-tsne_out <- Rtsne(AllSongsMFCCMatrix, dims=3) # Run TSNE
+tsne_out = Rtsne(AllSongsMFCCMatrix, dims=3) 
 
 ### transform result to a data frame and match original songs data frame
 reduced = tsne_out$Y %>%
@@ -206,7 +226,7 @@ reduced$trackid = mp3s
   
 reduced = reduced %>% left_join(AllSongs)
 
-#######  Create scatter plot of 3D reduced t-sne dimensions 
+#######  Create 3D plotly plot of reduced t-sne dimensions 
 plot_ly(
   reduced,
   x = ~V1, y = ~V2, z = ~V3,
