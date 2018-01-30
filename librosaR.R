@@ -13,6 +13,7 @@ ff = librosa$feature
 audio_path = 'mp3/059G9tpE3kl6wz3kiddaN0.mp3'
 mp3 = librosa$load(audio_path)
 mp3[[2]]
+
 length(mp3[[1]])
 length(mp3[[1]])/mp3[[2]]  # 30 seconds sound
 
@@ -28,7 +29,7 @@ melgram = librosa$logamplitude(
   ref_power=1.0
 )
 dim(melgram)
-
+image(melgram)
 
 ##### mfcc 
 mfcc = function(file, dir, .pb = NULL)
@@ -81,7 +82,10 @@ for(i in 1:422){
   EurosongsMelsArray[i,,,] = EurosongsMels[[i]]
 }
 
-image(EurosongsMelsArray[1, , ,])
+image(t(EurosongsMelsArray[11, , ,]))
+image((EurosongsMelsArray[11, , ,]))
+
 saveRDS(EurosongsMelsArray, "EurosongsMelArrays.RDs")
 
+EurosongsMelsArray = readRDS("EurosongsMelArrays.RDs")
 

@@ -14,12 +14,14 @@ secret = readRDS("secret.RDs")
 
 GetSpotifyToken = function(clientID, secret){
   
-  response <- POST('https://accounts.spotify.com/api/token',
-                   accept_json(),
-                   authenticate(clientID, secret),
-                   body=list(grant_type='client_credentials'),
-                   encode='form',
-                   verbose())
+  response <- POST(
+    'https://accounts.spotify.com/api/token',
+    accept_json(),
+    authenticate(clientID, secret),
+    body=list(grant_type='client_credentials'),
+    encode='form',
+    verbose()
+  )
   
   if (status_code(response) == 200){
     return(content(response)$access_token)
