@@ -1,7 +1,8 @@
 ###############################################################################
 ##
-##  download different playlists and visualise with t-sne
+##  visualise different playlists with t-sne
 
+#### libraries needed ####
 library(httr)
 library(purrr)
 library(dplyr)
@@ -9,6 +10,7 @@ library(reticulate)
 library(Rtsne)
 library(plotly)
 
+#### python environment with librosa module installed
 use_python(python = "/usr/bin/python3")
 
 ## spotify credientials
@@ -74,7 +76,8 @@ ExtractTracksFromPlaylist = function(offset = 0, ownerID, playlistID, clientID, 
 
 ######## get different kind of songs ####################################################
 
-########  Bach songs ################
+
+########  Bach songs #########################
 ownerID = "spotify"
 playlistID = "37i9dQZF1DWZnzwzLBft6A"
 
@@ -90,7 +93,7 @@ BACH_tracks = ExtractTracksFromPlaylist(
 ## ignore the songs without preview URL
 BACH_tracks = BACH_tracks %>% filter(preview_url != "")
 
-######### Heavy metal songs ###########
+######### Heavy metal songs ##################
 ownerID = "spotify"
 playlistID = "37i9dQZF1DX9qNs32fujYe"
 
@@ -107,7 +110,7 @@ HEAVYMETAL_tracks = ExtractTracksFromPlaylist(
 HEAVYMETAL_tracks = HEAVYMETAL_tracks %>% filter(preview_url != "")
 
 
-######### Michael Jackson songs #####
+######### Michael Jackson songs ############
 ownerID = "spotify"
 playlistID = "37i9dQZF1DXaTIN6XNquoW"
 
@@ -124,9 +127,7 @@ MJ_tracks = ExtractTracksFromPlaylist(
 MJ_tracks = MJ_tracks %>% filter(preview_url != "")
 
 
-
-
-########## bach violin
+########## bach violin songs ##################
 ownerID = "adrientsuzuki"
 playlistID = "6sGxlZaDfoTTQ4FCimYgl7"
 
@@ -143,8 +144,7 @@ VIOLIN_tracks = ExtractTracksFromPlaylist(
 VIOLIN_tracks = VIOLIN_tracks %>% filter(preview_url != "")
 
 
-
-######### stack all songs in one data frame and retrive mp3's #####################
+######### stack all songs in one data frame and retrieve mp3's #####################
 
 AllSongs = bind_rows(MJ_tracks, HEAVYMETAL_tracks, BACH_tracks, VIOLIN_tracks)
 
@@ -157,7 +157,7 @@ for(i in seq_along(AllSongs$preview_url))
   )
 }
 
-########  Calculate melspectogram #################################################
+########  Calculate mel spectogram #################################################
 ## using python librosa pacakge (via the reticulate package)
 ## all downloaded mp3's are put trhough librosa
 
@@ -206,11 +206,12 @@ reduced$trackid = mp3s
   
 reduced = reduced %>% left_join(AllSongs)
 
+#######  Create scatter plot of 3D reduced t-sne dimensions 
 plot_ly(
   reduced,
   x = ~V1, y = ~V2, z = ~V3,
   color=~label,
-  text = ~artist
+  text = ~paste(artist, "<br>", song)
 ) %>%
   add_markers() %>%
   layout(title="3D t-sne on spotify mp3 samples")
